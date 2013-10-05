@@ -1,4 +1,4 @@
-/* backbone.easybind.js v0.0.2 (coffeescript output) */ 
+/* backbone.easybind.js v0.0.3 (coffeescript output) */ 
 
 (function() {
   var DOMEventList, bindEvents, camelize, capitalize, dasherize,
@@ -126,5 +126,7 @@
     return Collection;
 
   })(Backbone.Collection);
+
+  Backbone.EasyBind.VERSION = '0.0.3';
 
 }).call(this);

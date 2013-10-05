@@ -66,4 +66,4 @@ class Backbone.EasyBind.Collection extends Backbone.Collection
 
 
 # This property is updated automatically by Grunt during builds
-Backbone.EasyBind.VERSION = '0.0.1'
+Backbone.EasyBind.VERSION = '0.0.3'
