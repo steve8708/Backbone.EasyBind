@@ -24,7 +24,8 @@ bindEvents = (context) ->
   conext.on 'all', (event, args...) =>
     camelized = camelize event
     if camelized
-      method = context['on' + camelized[0].toUpperCase() + camelized.substring 1]
+      methodName = "on#{ camelized[0].toUpperCase() }#{ camelized.substring 1 }"
+      method = context[methodName]
       method.apply context, args if method
 
 class Backbone.EasyBind.View extends Backbone.View
