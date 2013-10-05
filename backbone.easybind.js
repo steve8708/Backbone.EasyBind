@@ -1,141 +1,130 @@
-/* backbone.list.js v0.0.3 (coffeescript output) */ 
+/* backbone.easybind.js v0.0.2 (coffeescript output) */ 
 
 (function() {
-  var method, _base, _base1, _i, _j, _len, _len1, _ref, _ref1,
-    __slice = [].slice;
+  var DOMEventList, bindEvents, camelize, capitalize, dasherize,
+    __slice = [].slice,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  Backbone.List = (function() {
-    function List(items, options) {
-      if (options == null) {
-        options = {};
+  DOMEventList = 'blur focus focusin focusout load resize scroll\
+  unload click dblclick mousedown mouseup mousemove mouseover\
+  mouseout mouseenter mouseleave change select submit keydown\
+  keypress keyup error touchstart touchend touchmove'.split(/\s+/);
+
+  camelize = function(str) {
+    return str.replace(/[^\d\w]+(.)?/g, function(match, chr) {
+      if (chr) {
+        return chr.toUpperCase();
+      } else {
+        return '';
       }
-      this.reset(items, options);
-      if (!options.noState) {
-        addState(this);
+    });
+  };
+
+  capitalize = function(str) {
+    if (str) {
+      return str[0].toUpperCase() + str.substring(1);
+    } else {
+      return '';
+    }
+  };
+
+  dasherize = function(str) {
+    return str.replace(/::/g, '/').replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2').replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/_/g, '-').toLowerCase();
+  };
+
+  Backbone.EasyBind = {};
+
+  bindEvents = function(context) {
+    var _this = this;
+    return conext.on('all', function() {
+      var args, camelized, event, method, methodName;
+      event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      camelized = camelize(event);
+      if (camelized) {
+        methodName = "on" + (camelized[0].toUpperCase()) + (camelized.substring(1));
+        method = context[methodName];
+        if (method) {
+          return method.apply(context, args);
+        }
       }
-      if (_.isFunction(this.initialize)) {
-        this.initialize.apply(this, arguments);
-      }
+    });
+  };
+
+  Backbone.EasyBind.View = (function(_super) {
+    __extends(View, _super);
+
+    function View() {
+      var _this = this;
+      View.__super__.constructor.apply(this, arguments);
+      bindEvents(this);
+      this.on('all', function() {
+        var args, callback, camelSplit, event, key, selector, value, _ref, _results;
+        event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+        _results = [];
+        for (key in _this) {
+          value = _this[key];
+          if (key.indexOf('on') === 0) {
+            camelSplit = key.match(/[A-Z][a-z]+/);
+            event = camelSplit[0];
+            if (event && (_ref = event.toLowerCase, __indexOf.call(DOMEventList, _ref) >= 0)) {
+              callback = typeof value === 'function' ? value : _this[value];
+              if (callback && key.length === event.length + 2) {
+                _results.push(_this.$el.on("" + event + ".delegateEvents", callback));
+              } else {
+                selector = dasherize(camelSplit.slice(1));
+                _results.push(_this.$el.on("" + event + ".delegateEvents", "." + selector, callback));
+              }
+            } else {
+              _results.push(void 0);
+            }
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      });
     }
 
-    List.prototype.unshift = function() {
-      var item, items, _i, _len, _ref, _results;
-      items = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      _ref = items.reverse();
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        item = _ref[_i];
-        _results.push(this.add(item, {
-          at: 0
-        }));
-      }
-      return _results;
-    };
+    return View;
 
-    List.prototype.push = function() {
-      var item, items, _i, _len, _results;
-      items = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      _results = [];
-      for (_i = 0, _len = items.length; _i < _len; _i++) {
-        item = items[_i];
-        _results.push(this.add(item, {
-          at: this.length
-        }));
-      }
-      return _results;
-    };
+  })(Backbone.View);
 
-    List.prototype.shift = function() {
-      return this.remove(null, {
-        at: 0
-      });
-    };
+  Backbone.EasyBind.Model = (function(_super) {
+    __extends(Model, _super);
 
-    List.prototype.pop = function() {
-      return this.remove(null, {
-        at: this.length - 1
-      });
-    };
+    function Model() {
+      Model.__super__.constructor.apply(this, arguments);
+      bindEvents(this);
+    }
 
-    List.prototype.empty = function() {
-      return this.splice(0, Infinity);
-    };
+    return Model;
 
-    List.prototype.eventNamespace = 'listItem:';
+  })(Backbone.Model);
 
-    List.prototype.bubbleEvents = true;
+  Backbone.EasyBind.Router = (function(_super) {
+    __extends(Router, _super);
 
-    List.prototype.reset = function(items, options) {
-      if (options == null) {
-        options = {};
-      }
-      this.splice(this.length, this.length);
-      this.push.apply(this, items);
-      if (!options.silent) {
-        return this.trigger('reset', this, options);
-      }
-    };
+    function Router() {
+      Router.__super__.constructor.apply(this, arguments);
+      bindEvents(this);
+    }
 
-    List.prototype.add = function(item, options) {
-      var at,
-        _this = this;
-      if (options == null) {
-        options = {};
-      }
-      at = options.at != null ? options.at : options.at = this.length;
-      if (this.bubbleEvents && item && _.isFunction(item.on)) {
-        this.listenTo(item, 'all', function() {
-          var args, eventName;
-          eventName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-          if (_this.bubbleEvents) {
-            return _this.trigger.apply(_this, ["" + (_this.eventNamespace || '') + _this.eventName].concat(__slice.call(args)));
-          }
-        });
-      }
-      if (this.model) {
-        item = new this.model(item);
-      }
-      this.splice(at, null, item);
-      if (!options.silent) {
-        return this.trigger('add', item, this, options);
-      }
-    };
+    return Router;
 
-    List.prototype.remove = function(item, options) {
-      var index;
-      if (options == null) {
-        options = {};
-      }
-      index = options.at || this.indexOf(item);
-      if (item == null) {
-        item = this[index];
-      }
-      this.splice(index, 1);
-      if (!options.silent) {
-        this.trigger('remove', item, this, options);
-      }
-      item;
-      return this.stopListening(item);
-    };
+  })(Backbone.Router);
 
-    return List;
+  Backbone.EasyBind.Collection = (function(_super) {
+    __extends(Collection, _super);
 
-  })();
+    function Collection() {
+      Collection.__super__.constructor.apply(this, arguments);
+      bindEvents(this);
+    }
 
-  _.extend(Backbone.List.prototype, Backbone.Events);
+    return Collection;
 
-  _ref = ['splice', 'indexOf', 'lastIndexOf', 'join', 'reverse', 'sort', 'valueOf', 'map', 'forEach', 'every', 'reduce', 'reduceRight', 'filter', 'some'];
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    method = _ref[_i];
-    (_base = Backbone.List.prototype)[method] || (_base[method] = arr[method]);
-  }
-
-  _ref1 = ['each', 'contains', 'find', 'filter', 'reject', 'contains', 'max', 'min', 'sortBy', 'groupBy', 'sortedIndex', 'shuffle', 'toArray', 'size', 'first', 'last', 'initial', 'rest', 'without', 'isEmpty', 'chain', 'where', 'findWhere', 'clone', 'pluck', 'invoke'];
-  for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-    method = _ref1[_j];
-    (_base1 = Backbone.List.prototype)[method] || (_base1[method] = _[method]);
-  }
-
-  Backbone.List.VERSION = '0.0.3';
+  })(Backbone.Collection);
 
 }).call(this);
