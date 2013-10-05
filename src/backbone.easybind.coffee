@@ -63,3 +63,7 @@ class Backbone.EasyBind.Collection extends Backbone.Collection
   constructor: ->
     super
     bindEvents @
+
+
+# This property is updated automatically by Grunt during builds
+Backbone.EasyBind.VERSION = '0.0.1'
