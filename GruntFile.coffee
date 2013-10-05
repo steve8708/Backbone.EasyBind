@@ -66,8 +66,8 @@ module.exports = (grunt) ->
         src: [ 'src/backbone.easybind.coffee' ]
         overwrite: true
         replacements: [
-          from: /backbone.easybind.VERSION = '.*?'/i
-          to: -> "backbone.easybind.VERSION = '#{ packageVersion() }'"
+          from: /Backbone.EasyBind.VERSION = '.*?'/i
+          to: -> "Backbone.EasyBind.VERSION = '#{ packageVersion() }'"
         ]
 
       debugJS:
