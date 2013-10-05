@@ -14,6 +14,18 @@ class Model extends Backbone.EasyBind.Model
   # Fires on 'myCustomEvent' event.
   onMyCustomEvent: ->
 
+
+class View extends Backbone.EasyBind.View
+  # Fires when @el was clicked
+  onClick: (event) ->
+
+  # Fires on hover '.main-image'
+  onHoverMainImage: (event) ->
+
+  # Fires on touchend '.title-container'
+  onTouchendTitleContainer: (event) ->
+
+
 class Router extends Backbone.EasyBind.Router
   # Fires on 'route' event
   onRoute: ->
@@ -28,17 +40,6 @@ class Collection extends Backbone.EasyBind.Collection
 
   # Fires when a model in the collection fires a 'change:active' event
   onChangeActive: (model, value) ->
-
-
-class View extends Backbone.EasyBind.View
-  # Fires when @el was clicked
-  onClick: (event) ->
-
-  # Fires on hover '.main-image'
-  onHoverMainImage: (event) ->
-
-  # Fires on touchend '.title-container'
-  onTouchendTitleContainer: (event) ->
 
 ```
 
