@@ -1,3 +1,5 @@
+Backbone = @Backbone or typeof require is 'function' and require 'backbone'
+
 DOMEventList = 'blur focus focusin focusout load resize scroll
   unload click dblclick mousedown mouseup mousemove mouseover
   mouseout mouseenter mouseleave change select submit keydown
@@ -21,12 +23,25 @@ dasherize = (str) ->
 Backbone.EasyBind = {}
 
 bindEvents = (context) ->
+  $window = $ window
+  $document = $ document
+
+  eventNamespace = "easyBindEvents-#{ context.cid }"
+  for ctx, val of document: $document, window: $window
+    for key, value of context
+      if key.indexOf "on#{ capitalize ctx }" is 0
+        eventName = key.substring(ctx.length + 2).toLowerCase()
+        val.on "#{ eventName }.#{ eventNamespace }", value and value.bind context
+
+  context.on 'destroy', =>
+    $window.off eventNamespace
+    $document.off eventNamespace
+
   conext.on 'all', (event, args...) =>
     camelized = camelize event
-    if camelized
-      methodName = "on#{ camelized[0].toUpperCase() }#{ camelized.substring 1 }"
-      method = context[methodName]
-      method.apply context, args if method
+    methodName = "on#{ camelized[0].toUpperCase() }#{ camelized.substring 1 }"
+    method = context[methodName]
+    method.apply context, args if method
 
 class Backbone.EasyBind.View extends Backbone.View
   constructor: ->
@@ -41,10 +56,10 @@ class Backbone.EasyBind.View extends Backbone.View
           if event and event.toLowerCase in DOMEventList
             callback = if typeof value is 'function' then value else @[value]
             if callback and key.length is event.length + 2
-              @$el.on "#{event}.delegateEvents", callback
+              @$el.on "#{ event }.delegateEvents", callback
             else
               selector = dasherize camelSplit.slice 1
-              @$el.on "#{event}.delegateEvents", ".#{selector}", callback
+              @$el.on "#{ event }.delegateEvents", ".#{ selector }", callback
 
 
 class Backbone.EasyBind.Model extends Backbone.Model
