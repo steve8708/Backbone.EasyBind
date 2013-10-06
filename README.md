@@ -25,6 +25,12 @@ class View extends Backbone.EasyBind.View
   # Fires on touchend '.title-container'
   onTouchendTitleContainer: (event) ->
 
+  # Fires on document keyup event
+  onDocumentKeyup: (event) ->
+
+  # Fires on window resize
+  onWindowResize: (event) ->
+
 
 class Router extends Backbone.EasyBind.Router
   # Fires on 'route' event
